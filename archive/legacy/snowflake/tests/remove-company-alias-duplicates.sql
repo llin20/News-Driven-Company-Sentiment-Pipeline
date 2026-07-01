@@ -1,0 +1,18 @@
+USE ROLE TRAINING_ROLE;
+USE WAREHOUSE MONKEY_WH;
+USE DATABASE MONKEY_DB;
+USE SCHEMA FINAL_PROJECT;
+
+CREATE OR REPLACE TEMP TABLE dedup_aliases AS
+SELECT *
+FROM dim_company_aliases
+QUALIFY ROW_NUMBER() OVER (
+    PARTITION BY company_id, alias
+    ORDER BY alias_id
+) = 1;
+
+TRUNCATE TABLE dim_company_aliases;
+
+INSERT INTO dim_company_aliases
+SELECT *
+FROM dedup_aliases;
